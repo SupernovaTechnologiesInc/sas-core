@@ -1,0 +1,28 @@
+// SAS Protocol - On-Chain Verifier
+// Version: 0.1.0 (Alpha)
+
+export contract SasVerifier {
+    // State: Stores the root of trust for valid TEE signers
+    ledger tee_registry_root: Cell<Bytes32>;
+
+    // Constructor: Initialize with the authorized TEE public key set
+    constructor(initial_root: Bytes32) {
+        tee_registry_root = initial_root;
+    }
+
+    // Circuit: Verifies the ZK proof submitted by the user
+    // Input: A ZK proof containing the "Liveness Score" and "Session ID"
+    // Output: Returns true if the score exceeds the humanity threshold
+    export circuit verify_humanity(proof: ZkProof) -> Boolean {
+        // TODO: Implement Compact verification logic
+        // 1. Verify proof against current tee_registry_root
+        // 2. Check nullifier to prevent replay attacks
+        return true;
+    }
+
+    // Mutation: Updates the registry if a TEE is compromised
+    export circuit rotate_keys(new_root: Bytes32, signature: Signature) {
+        // Admin function to rotate keys
+        tee_registry_root = new_root;
+    }
+}
