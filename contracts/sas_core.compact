@@ -1,28 +1,43 @@
-// SAS Protocol - On-Chain Verifier
-// Version: 0.1.0 (Alpha)
+pragma language_version >= 0.20.0;
 
-export contract SasVerifier {
-    // State: Stores the root of trust for valid TEE signers
-    ledger tee_registry_root: Cell<Bytes32>;
+import CompactStandardLibrary;
 
-    // Constructor: Initialize with the authorized TEE public key set
-    constructor(initial_root: Bytes32) {
-        tee_registry_root = initial_root;
-    }
+// --- PUBLIC LEDGER STATE ---
+// The "Truth Layer" visible to the network.
+export ledger attribution_registry: Map<Bytes<32>, Uint<32>>;
 
-    // Circuit: Verifies the ZK proof submitted by the user
-    // Input: A ZK proof containing the "Liveness Score" and "Session ID"
-    // Output: Returns true if the score exceeds the humanity threshold
-    export circuit verify_humanity(proof: ZkProof) -> Boolean {
-        // TODO: Implement Compact verification logic
-        // 1. Verify proof against current tee_registry_root
-        // 2. Check nullifier to prevent replay attacks
-        return true;
-    }
+// --- WITNESS DEFINITION ---
+// Interface for the off-chain Sentinel (Layer 1)
+witness sas_witness(
+    asset_hash: Bytes<32>,
+    hcs_score: Uint<32>,
+    signature: Bytes<64>,
+    pub_key: Bytes<32>
+): Void;
 
-    // Mutation: Updates the registry if a TEE is compromised
-    export circuit rotate_keys(new_root: Bytes32, signature: Signature) {
-        // Admin function to rotate keys
-        tee_registry_root = new_root;
-    }
+// --- CIRCUIT: VERIFY ATTRIBUTION ---
+export circuit verify_contribution(
+    public_asset_hash: Bytes<32>,
+    required_threshold: Uint<32>
+): Void {
+
+    // 1. Ingest Private Data via Witness
+    // In the Reference Implementation, this binding is mocked.
+    // Licensed partners: See 'Manual Section 3' for TEE signature verification.
+    const hcs = witness_hcs_score();
+
+    // 2. Logic Gate: The Policy Check
+    // If the score is too low, the proof fails.
+    assert hcs >= required_threshold "Error: Human Contribution Score too low.";
+
+    // 3. State Transition
+    // Update the public ledger with the verified score.
+    attribution_registry.insert(public_asset_hash, hcs);
+}
+
+// Helper to mock the witness call for compilation
+circuit witness_hcs_score(): Uint<32> {
+    // SANITIZED: Returns a hardcoded score for the reference build.
+    // Real TEE logic is excluded from this repo.
+    return 85; 
 }
