@@ -9,8 +9,8 @@ The architecture is designed to solve the **"Transparency Paradox"**:
 ## 2. Component Diagram
 
 ```mermaid
-graph TD
-    A[Client / Adobe C2PA] -->|Raw Biometrics + Session ID| B[Sentinel Node (TEE)]
-    B -->|Sanitized ZK Input| C[Midnight ZK Circuit]
-    C -->|Proof of Liveness| D[sas_core.compact]
-    D -->|Verified Attribute| E[C2PA Manifest]
+graph TD;
+    A["Client / Adobe C2PA"] -->|"Raw Biometrics + Session ID"| B["Sentinel Node (TEE)"];
+    B -->|"Sanitized ZK Input"| C["Midnight ZK Circuit"];
+    C -->|"Proof of Liveness"| D["sas_core.compact"];
+    D -->|"Verified Attribute"| E["C2PA Manifest"];
