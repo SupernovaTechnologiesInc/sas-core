@@ -1,0 +1,23 @@
+[package]
+name = "sas-bridge"
+version = "0.1.0"
+edition = "2021"
+authors = ["SAS Protocol Team"]
+description = "Reference C2PA Injection Bridge for Midnight ZK-Proofs"
+
+# See Engineering Manual Part 4 for build instructions
+# The 'main.rs' logic is excluded from this public repo.
+
+[dependencies]
+# Core C2PA SDK (Adobe Content Credentials)
+c2pa = "0.25.0" 
+
+# Serialization for Metadata Injection
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Async Runtime (Standard for Blockchain Bridges)
+tokio = { version = "1.0", features = ["full"] }
+
+# Error Handling
+thiserror = "1.0"
