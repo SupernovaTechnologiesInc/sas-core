@@ -6,12 +6,14 @@ The SAS Protocol is a privacy-preserving standard for verifying human identity i
 
 ## Repository Structure
 
-This repository contains the core architectural components for the SAS Reference Bridge:
+This repository contains the core architectural components for the SAS Reference Bridge, organized by the layers defined in the Engineering Manual:
 
-* **`/contracts`**: Midnight Compact smart contracts for on-chain identity verification and certificate issuance.
-* **`/circuits`**: ZK-SNARK circuits for validating biometric liveness proofs without revealing raw user data.
-* **`/tee-worker`**: Rust-based logic for the Trusted Execution Environment (TEE) that handles secure biometric ingestion.
-* **`/docs`**: Architectural specifications and sequence diagrams.
+* **`/sentinel` (Layer 1):** Python-based TEE Simulator for capturing "Proof of Humanity" telemetry and generating secure biometric witnesses.
+* **`/contracts` (Layer 2):** Midnight Compact smart contracts (`sas_core.compact`) for on-chain verification and registry management.
+* **`/bridge` (Layer 3):** Rust-based C2PA injection logic for embedding Midnight Proofs into media asset metadata.
+* **`/ui` (Layer 4):** React frontend scaffolding for the Lace Wallet verification dashboard.
+* **`/circuits`:** ZK-SNARK circuits for validating liveness proofs without revealing raw user data.
+* **`/docs`:** Architectural specifications and sequence diagrams.
 
 ## License
 
