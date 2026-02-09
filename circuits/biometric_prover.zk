@@ -1,27 +1,41 @@
-// ZK Circuit Definition for SAS Biometric Proof
-// Purpose: Prove that a user's biometric score > THRESHOLD without revealing the score.
+// SUPERNOVA SAS: Biometric Prover Circuit
+// Zero-Knowledge definition for behavioral entropy verification.
 
-public input:
-    - session_id: Field
-    - c2pa_hash: Field
-    - timestamp: Field
+circuit BiometricProver {
+    
+    // PUBLIC INPUTS
+    // The threshold required to pass the check (e.g., 70)
+    input field threshold;
+    
+    // PRIVATE INPUTS (Witness)
+    // The raw data captured by the Sentinel (never revealed)
+    input field[64] keystroke_intervals;
+    input field[64] mouse_velocity;
+    input field session_entropy_score;
 
-private input:
-    - raw_biometric_vector: [Field; 128] // Keystroke dynamics & mouse velocity
-    - proprietary_weights: [Field; 128]  // PATENT PROTECTED: Scoring matrix
+    // MAIN VERIFICATION LOGIC
+    // ---------------------------------------------------------
+    
+    // 1. Integrity Check
+    // Verify that the claimed entropy score matches the raw inputs.
+    // Reference Implementation: Uses linear accumulation of vector magnitudes.
+    
+    field calculated_score = 0;
+    
+    for i in 0..64 {
+        calculated_score = calculated_score + keystroke_intervals[i];
+        calculated_score = calculated_score + mouse_velocity[i];
+    }
+    
+    // Ensure the witness data sums up to the claimed score
+    // (Simplification for reference circuit)
+    assert(calculated_score == session_entropy_score);
 
-function main(
-    public session_id,
-    private raw_biometric_vector,
-    private proprietary_weights
-) {
-    // Step 1: Compute weighted score (Dot Product)
-    // NOTE: Implementation of the scoring algorithm is reserved.
-    // field score = dot_product(raw_biometric_vector, proprietary_weights);
+    // 2. Threshold Constraint
+    // The core proof: Is the hidden score greater than the public threshold?
+    assert(session_entropy_score > threshold);
 
-    // Step 2: Assert score is above the "Liveness Threshold"
-    // assert(score > HUMANITY_THRESHOLD);
-
-    // Step 3: Bind to Session ID
-    // hash(session_id, score) == public_commitment
+    // 3. Output
+    // If constraints pass, the proof is valid.
+    return 1;
 }
