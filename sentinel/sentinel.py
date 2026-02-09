@@ -4,53 +4,50 @@ import hashlib
 import os
 
 # SENTINEL: Reference TEE Simulator (Layer 1)
-# Verifies human liveness without exposing raw biometric data.
+# Verifies Human Contribution Score (HCS) via secure session logging.
 # -----------------------------------------------------------
-# NOTE: This reference implementation uses a "Policy Agnostic" scoring model.
-# Implementers should define their own weighting matrix in 'weights.json'.
+# Reference Implementation for Midnight Testnet.
 
 class SentinelSession:
     def __init__(self):
         self.session_log = []
-        self.weights = self._load_governance_weights()
-        print(f">>> TEE INITIALIZED: Loaded {len(self.weights)} governance parameters.")
+        self.config = self._load_config()
+        print(f">>> TEE INITIALIZED: Session Monitor Active.")
 
-    def _load_governance_weights(self):
+    def _load_config(self):
         """
-        Loads the dApp-specific scoring logic. 
-        In production, this is injected securely into the Enclave.
+        Loads the scoring configuration.
+        Checks for local 'config.json', otherwise applies standard defaults.
         """
         try:
-            with open("weights.json", "r") as f:
+            with open("config.json", "r") as f:
                 return json.load(f)
         except FileNotFoundError:
-            # Default to a neutral state if no policy is defined
-            return {"keystroke_weight": 1, "velocity_threshold": 50}
+            # Standard default configuration for reference implementation
+            return {"keystroke_weight": 1.0, "velocity_threshold": 50}
 
     def log_telemetry(self, event_type, raw_data):
         """
         Ingests behavioral data.
-        PRIVACY: Raw data is hashed immediately and never persisted in plaintext.
+        Data is hashed immediately to preserve user privacy.
         """
         entry = {
             "ts": time.time(),
             "type": event_type,
             "data_hash": hashlib.sha256(str(raw_data).encode()).hexdigest(),
-            # In a real TEE, we would process the raw_data here in volatile memory
+            # Calculate local entropy for the reference score
             "entropy_score": len(str(raw_data)) 
         }
         self.session_log.append(entry)
 
     def seal_and_sign(self):
         """
-        Generates the 'Witness' for the Midnight ZK Circuit.
+        Generates the 'Witness' payload for the ZK Circuit.
         """
-        # 1. Calculate the 'Human Contribution Score' (HCS)
-        # The specific math here is the "Method" (Patent Protected).
-        # We expose the interface, but the logic relies on the config.
+        # 1. Calculate the HCS (Human Contribution Score)
         score = self._compute_hcs()
 
-        # 2. Create the Payload
+        # 2. Create the Signed Payload
         payload = {
             "session_id": hashlib.sha256(json.dumps(self.session_log).encode()).hexdigest(),
             "hcs_score": score,
@@ -58,25 +55,29 @@ class SentinelSession:
             "status": "SIGNED_BY_TEE"
         }
 
-        # 3. Output for ZK Circuit
+        # 3. Output for ZK Circuit ingestion
         with open("witness_output.json", "w") as f:
             json.dump(payload, f, indent=2)
         
         return payload
 
     def _compute_hcs(self):
-        # TODO: Insert specific Patent Logic here.
-        # For the open-source repo, we return a summation of entropy.
-        return sum(e['entropy_score'] for e in self.session_log) * self.weights.get('keystroke_weight', 1)
+        """
+        Computes the session score based on accumulated telemetry.
+        Reference Heuristic: Summation of entropy events weighted by configuration.
+        """
+        base_score = sum(e['entropy_score'] for e in self.session_log)
+        return base_score * self.config.get('keystroke_weight', 1.0)
 
 # --- Execution Entry Point ---
 if __name__ == "__main__":
     # Simulate a User Session
     sentinel = SentinelSession()
     
-    print("... Capturing Biometrics ...")
+    print("... Capturing Session Telemetry ...")
     sentinel.log_telemetry("keystroke_dynamics", "user_typing_pattern_sample")
     sentinel.log_telemetry("mouse_velocity", [12, 45, 88, 12])
     
     result = sentinel.seal_and_sign()
     print(f">>> SESSION SEALED. Proof Generated: {result['session_id']}")
+    print(f">>> HCS SCORE: {result['hcs_score']}")
