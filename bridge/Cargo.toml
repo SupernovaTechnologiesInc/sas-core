@@ -1,23 +1,24 @@
 [package]
-name = "sas-bridge"
+name = "supernova-bridge"
 version = "0.1.0"
 edition = "2021"
-authors = ["SAS Protocol Team"]
-description = "Reference C2PA Injection Bridge for Midnight ZK-Proofs"
+authors = ["Supernova Contributors"]
+description = "Middleware for injecting Midnight ZK Proofs into C2PA Manifests."
 
-# See Engineering Manual Part 4 for build instructions
-# The 'main.rs' logic is excluded from this public repo.
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# Core C2PA SDK (Adobe Content Credentials)
-c2pa = "0.25.0" 
+# C2PA Standard Library (Adobe/CAI)
+# Core dependency for C2PA manifest injection and signing.
+c2pa = { version = "0.25.0", features = ["file_io", "add_thumbnails"] }
 
-# Serialization for Metadata Injection
+# Async Runtime
+tokio = { version = "1.0", features = ["full"] }
+
+# Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# Async Runtime (Standard for Blockchain Bridges)
-tokio = { version = "1.0", features = ["full"] }
-
-# Error Handling
-thiserror = "1.0"
+# Cryptography (for local certificate handling)
+openssl = { version = "0.10", features = ["vendored"] }
+hex = "0.4"
