@@ -1,56 +1,81 @@
 #!/bin/bash
 
-# ==========================================================
-# SAS PROTOCOL - REFERENCE ARCHITECTURE SETUP
-# Validates local environment for TEE, Compact, and Bridge layers.
-# ==========================================================
+# SUPERNOVA SAS: Development Environment Setup
+# Reference Implementation for Midnight Testnet
 
-# Text Formatting
-GREEN='\033[0;32m'
-BLUE='\033[1;34m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+set -e  # Exit immediately if a command exits with a non-zero status.
 
-echo -e "${BLUE}>>> SAS PROTOCOL: Initializing Development Environment...${NC}"
+echo "=================================================="
+echo "   SUPERNOVA: SECURE ATTRIBUTION SYSTEM (SAS)     "
+echo "   Setting up Reference Environment...            "
+echo "=================================================="
 
-# 1. Check Python (Layer 1: Sentinel)
-echo -n "Checking Python 3 environment... "
-if command -v python3 &> /dev/null; then
-    echo -e "${GREEN}DETECTED${NC}"
-else
-    echo -e "${YELLOW}MISSING${NC} (Required for Sentinel TEE Simulator)"
-    exit 1
-fi
-
-# 2. Check Rust (Layer 3: Bridge)
-echo -n "Checking Rust/Cargo toolchain... "
-if command -v cargo &> /dev/null; then
-    echo -e "${GREEN}DETECTED${NC}"
-else
-    echo -e "${YELLOW}WARNING${NC} (Rust is required to build the C2PA Bridge)"
-fi
-
-# 3. Check Docker (Layer 2: Midnight Compact)
-echo -n "Checking Docker (for Compact Compiler)... "
-if command -v docker &> /dev/null; then
-    echo -e "${GREEN}DETECTED${NC}"
-else
-    echo -e "${YELLOW}WARNING${NC} (Docker is required to compile Zero-Knowledge circuits)"
-fi
-
-# 4. Permission Setup
-echo -e "\nSetting execution permissions for Sentinel..."
-chmod +x sentinel/sentinel.py
-echo -e "${GREEN}Done.${NC}"
-
-# Final Integration Notice
-echo -e "\n${BLUE}========================================================${NC}"
-echo -e "${GREEN}>>> SETUP COMPLETE.${NC}"
-echo -e "Ready to build: Sentinel, Contracts, and Bridge."
+# --------------------------------------------------------
+# 1. SETUP PYTHON SENTINEL (Layer 1)
+# --------------------------------------------------------
 echo ""
-echo -e "${YELLOW}IMPORTANT NOTICE:${NC}"
-echo "This repository contains the Reference Architecture (Sanitized)."
-echo "To activate the patented biometric verification logic, you must"
-echo "place your licensed 'weights.json' and 'scoring_plugin.py'"
-echo "into the /sentinel directory as detailed in the Engineering Manual."
-echo -e "${BLUE}========================================================${NC}"
+echo "[1/3] Configuring Sentinel TEE Simulator..."
+
+if [ -d "sentinel" ]; then
+    cd sentinel
+    
+    # Create Virtual Environment if it doesn't exist
+    if [ ! -d "venv" ]; then
+        echo "   -> Creating Python virtual environment..."
+        python3 -m venv venv
+    fi
+    
+    # Activate and Install
+    source venv/bin/activate
+    
+    if [ -f "requirements.txt" ]; then
+        echo "   -> Installing dependencies..."
+        pip install -r requirements.txt > /dev/null
+    else
+        echo "   [!] Warning: sentinel/requirements.txt not found."
+    fi
+    
+    # Return to root
+    cd ..
+    echo "   -> Sentinel setup complete."
+else
+    echo "   [!] Error: 'sentinel' directory not found."
+fi
+
+# --------------------------------------------------------
+# 2. BUILD RUST BRIDGE (Layer 3)
+# --------------------------------------------------------
+echo ""
+echo "[2/3] Building C2PA Bridge..."
+
+if command -v cargo &> /dev/null; then
+    if [ -d "bridge" ]; then
+        cd bridge
+        echo "   -> Compiling Rust binaries (Release Mode)..."
+        cargo build --release --quiet
+        cd ..
+        echo "   -> Bridge build complete."
+    else
+        echo "   [!] Error: 'bridge' directory not found."
+    fi
+else
+    echo "   [!] Warning: Rust (cargo) is not installed. Skipping Bridge build."
+fi
+
+# --------------------------------------------------------
+# 3. FINAL CONFIGURATION
+# --------------------------------------------------------
+echo ""
+echo "[3/3] Finalizing Configuration..."
+
+# Create default config if missing (Simulates standard open source behavior)
+if [ ! -f "sentinel/config.json" ]; then
+    echo "   -> Creating default configuration..."
+    echo '{ "keystroke_weight": 1.0, "velocity_threshold": 50 }' > sentinel/config.json
+fi
+
+echo ""
+echo "=================================================="
+echo "   SETUP COMPLETE."
+echo "   Run 'source sentinel/venv/bin/activate' to begin."
+echo "=================================================="
